@@ -138,7 +138,7 @@ require('cf-deployment-tracker-client').track();		//reports back to us, this hel
 // ============================================================================================================================
 // 														Work Area
 // ============================================================================================================================
-var part1 = require('./utils/ws_part1');														//websocket message processing for part 1
+//var part1 = require('./utils/ws_part1');														//websocket message processing for part 1
 //var part2 = require('./utils/ws_part2');														//websocket message processing for part 2
 var kycp1 = require('./utils/kyc_part1');
 var ws = require('ws');																			//websocket mod
@@ -153,15 +153,18 @@ try{
 	//this hard coded list is intentionaly left here, feel free to use it when initially starting out
 	//please create your own network when you are up and running
 	//var manual = JSON.parse(fs.readFileSync('mycreds_docker_compose.json', 'utf8'));
-	var manual = JSON.parse(fs.readFileSync('mycreds_bluemix.json', 'utf8'));
+	var file = fs.readFileSync('mycreds_bluemix.json', 'utf8');
+	var manual = JSON.parse(file);
+	//console.log('manual :', manual);	
 	var peers = manual.credentials.peers;
+	//console.log('peers :', peers);
 	console.log('loading hardcoded peers');
 	var users = null;																			//users are only found if security is on
 	if(manual.credentials.users) users = manual.credentials.users;
 	console.log('loading hardcoded users');
 }
 catch(e){
-	console.log('Error - could not find hardcoded peers/users, this is okay if running in bluemix');
+	console.log('Error - could not find hardcoded peers/[users], this is okay if running in bluemix');
 }
 
 // ---- Load From VCAP aka Bluemix Services ---- //
@@ -190,10 +193,10 @@ if(process.env.VCAP_SERVICES){																	//load from vcap, search for serv
 }
 
 //filter for type1 users if we have any
-function prefer_type1_users(user_array){
+function prefer_type2_users(user_array){
 	var ret = [];
 	for(var i in users){
-		if(users[i].enrollId.indexOf('type1') >= 0) {	//gather the type1 users
+		if(users[i].enrollId.indexOf('type2') >= 0) {	//gather the type1 users
 			ret.push(users[i]);
 		}
 	}
@@ -217,7 +220,7 @@ function detect_tls_or_not(peer_array){
 var options = 	{
 					network:{
 						peers: [peers[0]],																	//lets only use the first peer! since we really don't need any more than 1
-						users: prefer_type1_users(users),													//dump the whole thing, sdk will parse for a good one
+						users: prefer_type2_users(users),													//dump the whole thing, sdk will parse for a good one
 						options: {
 									quiet: true, 															//detailed debug messages on/off true/false
 									tls: detect_tls_or_not(peers), 											//should app to peer communication use tls?
@@ -233,7 +236,7 @@ var options = 	{
 						git_url: 'http://gopkg.in/mekacloud/kyc.v0/chaincode',									//GO get http url
 					
 						//hashed cc name from prev deployment, comment me out to always deploy, uncomment me when its already deployed to skip deploying again
-						//deployed_name: '16e655c0fce6a9882896d3d6d11f7dcd4f45027fd4764004440ff1e61340910a9d67685c4bb723272a497f3cf428e6cf6b009618612220e1471e03b6c0aa76cb'
+						deployed_name: 'ffdd48f7f8021cd32b6c2f12816667199d9e91af1c08d21c4e629c1c1b4752a065c38d9028a2bc6099b03d76dc9663610556fc08b6e9fefa46ee2ed22cb4bb7a'
 					}
 				};
 if(process.env.VCAP_SERVICES){
@@ -243,21 +246,25 @@ if(process.env.VCAP_SERVICES){
 
 // ---- Fire off SDK ---- //
 var chaincode = null;																		//sdk will populate this var in time, lets give it high scope by creating it here
+console.log('peer : ',options.network.peers)
+console.log('============================================================')
 ibc.load(options, function (err, cc){														//parse/load chaincode, response has chaincode functions!
+	console.log('cc : ', cc)
+	console.log('============================================================')
 	if(err != null){
 		console.log('! looks like an error loading the chaincode or network, app will fail\n', err);
 		if(!process.error) process.error = {type: 'load', msg: err.details};				//if it already exist, keep the last error
 	}
 	else{
 		chaincode = cc;
-		part1.setup(ibc, cc);																//pass the cc obj to part 1 node code
+		//part1.setup(ibc, cc);																//pass the cc obj to part 1 node code
 		//part2.setup(ibc, cc);																//pass the cc obj to part 2 node code
 		kycp1.setup(ibc, cc);
 
 
 		// ---- To Deploy or Not to Deploy ---- //
 		if(!cc.details.deployed_name || cc.details.deployed_name === ''){					//yes, go deploy
-			cc.deploy('init', ['20170504'], {delay_ms: 30000}, function(e){					//delay_ms is milliseconds to wait after deploy for conatiner to start, 50sec recommended
+			cc.deploy('init', ['99'], {delay_ms: 30000}, function(e){					//delay_ms is milliseconds to wait after deploy for conatiner to start, 50sec recommended
 				check_if_deployed(e, 1);
 			});
 		}
@@ -282,6 +289,8 @@ function check_if_deployed(e, attempt){
 	else{
 		console.log('[preflight check]', attempt, ': testing if chaincode is ready');
 		chaincode.query.read(['_customerindex'], function(err, resp){
+			/*console.log('[err]', err);
+			console.log('[resp]', resp);*/
 			var cc_deployed = false;
 			try{
 				if(err == null){															//no errors is good, but can't trust that alone
@@ -327,7 +336,7 @@ function cb_deployed(e){
 				console.log('received ws msg:', message);
 				try{
 					var data = JSON.parse(message);
-					part1.process_msg(ws, data);											//pass the websocket msg to part 1 processing
+					//part1.process_msg(ws, data);											//pass the websocket msg to part 1 processing
 					//part2.process_msg(ws, data);											//pass the websocket msg to part 2 processing
 					kycp1.process_msg(ws, data);
 				}
@@ -360,7 +369,7 @@ function cb_deployed(e){
 				ibc.block_stats(chain_stats.height - 1, cb_blockstats);
 				wss.broadcast({msg: 'reset'});
 				chaincode.query.read(['_customerindex'], cb_got_index);
-				chaincode.query.read(['_opentrades'], cb_got_trades);
+				//chaincode.query.read(['_opentrades'], cb_got_trades);
 			}
 			
 			//got the block's stats, lets send the statistics
@@ -404,7 +413,7 @@ function cb_deployed(e){
 			}
 			
 			//call back for getting open trades, lets send the trades
-			function cb_got_trades(e, trades){
+			/*function cb_got_trades(e, trades){
 				if(e != null) console.log('trade error:', e);
 				else {
 					try{
@@ -417,7 +426,7 @@ function cb_deployed(e){
 						console.log('trade msg error', e);
 					}
 				}
-			}
+			}*/
 		});
 	}
 }

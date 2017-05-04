@@ -11,6 +11,7 @@ module.exports.setup = function(sdk, cc){
 };
 
 module.exports.process_msg = function(ws, data){
+	console.log('kyc part1 - process_msg');
 	if(data.v === 1){																						//only look at messages for part 1
 		if(data.type == 'create'){
 			console.log('its a create!');
@@ -45,6 +46,7 @@ module.exports.process_msg = function(ws, data){
 
 	//got the customer index, lets get each customer
 	function cb_got_index(e, index){
+		console.log('index', index);
 		if(e != null) console.log('[ws error] did not get customer index:', e);
 		else{
 			try{
