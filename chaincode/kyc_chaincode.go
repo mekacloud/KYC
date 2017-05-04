@@ -33,7 +33,7 @@ import (
 type SimpleChaincode struct {
 }
 
-var customerIndexStr = "_marbleindex" //name for the key/value that will store a list of all known marbles
+var customerIndexStr = "_customerindex" //name for the key/value that will store a list of all known customers
 var openTradesStr = "_opentrades"     //name for the key/value that will store all open trades
 
 type Customer struct {
@@ -123,9 +123,9 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 		return res, err*/
 	} else if function == "write" { //writes a value to the chaincode state
 		return t.Write(stub, args)
-	} else if function == "new_customer" { //create a new marble
+	} else if function == "new_customer" { //create a new customer
 		return t.new_customer(stub, args)
-	} else if function == "set_user" { //change owner of a marble
+	} else if function == "set_user" { //change owner of a customer
 		res, err := t.set_user(stub, args)
 		//cleanTrades(stub) //lets make sure all open trades are still valid
 		return res, err
@@ -201,7 +201,7 @@ func (t *SimpleChaincode) Write(stub shim.ChaincodeStubInterface, args []string)
 }
 
 // ============================================================================================================================
-// Init Customer - create a new marble, store into chaincode state
+// Init Customer - create a new customer, store into chaincode state
 // ============================================================================================================================
 func (t *SimpleChaincode) new_customer(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
@@ -213,7 +213,7 @@ func (t *SimpleChaincode) new_customer(stub shim.ChaincodeStubInterface, args []
 	}
 
 	//input sanitation
-	fmt.Println("- start init marble")
+	fmt.Println("- start init customer")
 	if len(args[0]) <= 0 {
 		return nil, errors.New("1st argument must be a non-empty string")
 	}
@@ -234,47 +234,47 @@ func (t *SimpleChaincode) new_customer(stub shim.ChaincodeStubInterface, args []
 	}
 	ocupation := strings.ToLower(args[3])
 
-	//check if marble already exists
-	marbleAsBytes, err := stub.GetState(name)
+	//check if customer already exists
+	customerAsBytes, err := stub.GetState(name)
 	if err != nil {
-		return nil, errors.New("Failed to get marble name")
+		return nil, errors.New("Failed to get customer name")
 	}
 	res := Customer{}
-	json.Unmarshal(marbleAsBytes, &res)
+	json.Unmarshal(customerAsBytes, &res)
 	if res.Name == name {
-		fmt.Println("This marble arleady exists: " + name)
+		fmt.Println("This customer arleady exists: " + name)
 		fmt.Println(res)
-		return nil, errors.New("This marble arleady exists") //all stop a marble by this name exists
+		return nil, errors.New("This customer arleady exists") //all stop a customer by this name exists
 	}
 
 	res.Name = name
 	res.TelNo = telno
 	res.Age = size
 	res.Ocupation = ocupation
-	//build the marble json string manually
+	//build the customer json string manually
 	//str := `{"name": "` + name + `", "telno": "` + telno + `", "size": ` + strconv.Itoa(size) + `, "user": "` + user + `"}`
-	//err = stub.PutState(name, []byte(str)) //store marble with id as key
+	//err = stub.PutState(name, []byte(str)) //store customer with id as key
 	str, err := json.Marshal(res)
 	err = stub.PutState(name, str)
 	if err != nil {
 		return nil, err
 	}
 
-	//get the marble index
-	marblesAsBytes, err := stub.GetState(customerIndexStr)
+	//get the customer index
+	customersAsBytes, err := stub.GetState(customerIndexStr)
 	if err != nil {
-		return nil, errors.New("Failed to get marble index")
+		return nil, errors.New("Failed to get customer index")
 	}
-	var marbleIndex []string
-	json.Unmarshal(marblesAsBytes, &marbleIndex) //un stringify it aka JSON.parse()
+	var customerIndex []string
+	json.Unmarshal(customersAsBytes, &customerIndex) //un stringify it aka JSON.parse()
 
 	//append
-	marbleIndex = append(marbleIndex, name) //add marble name to index list
-	fmt.Println("! marble index: ", marbleIndex)
-	jsonAsBytes, _ := json.Marshal(marbleIndex)
-	err = stub.PutState(customerIndexStr, jsonAsBytes) //store name of marble
+	customerIndex = append(customerIndex, name) //add customer name to index list
+	fmt.Println("! customer index: ", customerIndex)
+	jsonAsBytes, _ := json.Marshal(customerIndex)
+	err = stub.PutState(customerIndexStr, jsonAsBytes) //store name of customer
 
-	fmt.Println("- end init marble")
+	fmt.Println("- end init customer")
 	return nil, nil
 }
 
@@ -292,16 +292,16 @@ func (t *SimpleChaincode) set_user(stub shim.ChaincodeStubInterface, args []stri
 
 	fmt.Println("- start set user")
 	fmt.Println(args[0] + " - " + args[1])
-	marbleAsBytes, err := stub.GetState(args[0])
+	customerAsBytes, err := stub.GetState(args[0])
 	if err != nil {
 		return nil, errors.New("Failed to get thing")
 	}
 	res := Customer{}
-	json.Unmarshal(marbleAsBytes, &res) //un stringify it aka JSON.parse()
+	json.Unmarshal(customerAsBytes, &res) //un stringify it aka JSON.parse()
 	//res.User = args[1]                  //change the user
 
 	jsonAsBytes, _ := json.Marshal(res)
-	err = stub.PutState(args[0], jsonAsBytes) //rewrite the marble with id as key
+	err = stub.PutState(args[0], jsonAsBytes) //rewrite the customer with id as key
 	if err != nil {
 		return nil, err
 	}

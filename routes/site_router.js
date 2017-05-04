@@ -26,7 +26,7 @@ function build_bag(){
 // Home
 // ============================================================================================================================
 router.route('/').get(function(req, res){
-	res.redirect('/p1');
+	res.redirect('/kyc');
 });
 
 // ============================================================================================================================
@@ -47,6 +47,17 @@ router.route('/p2').get(function(req, res){
 });
 router.route('/p2/:page?').get(function(req, res){
 	res.render('part2', {title: 'Marbles Part 2', bag: build_bag()});
+});
+
+
+// ============================================================================================================================
+// KYC Part 1
+// ============================================================================================================================
+router.route('/kyc').get(function(req, res){
+	res.render('kycp1', {title: 'KYC Part 1', bag: build_bag()});
+});
+router.route('/kyc/:page?').get(function(req, res){
+	res.render('kycp1', {title: 'KYC Part 1', bag: build_bag()});
 });
 
 module.exports = router;
