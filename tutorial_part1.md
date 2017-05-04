@@ -1,0 +1,1 @@
+This file has moved! Its [over here](/docs/tutorial_part1.md).
