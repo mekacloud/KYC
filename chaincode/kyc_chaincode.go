@@ -34,20 +34,21 @@ type SimpleChaincode struct {
 }
 
 var customerIndexStr = "_customerindex" //name for the key/value that will store a list of all known customers
-var openTradesStr = "_opentrades"     //name for the key/value that will store all open trades
+var openTradesStr = "_opentrades"       //name for the key/value that will store all open trades
 
 type Customer struct {
 	Name        string   `json:"name"` //the fieldtags are needed to keep case from bouncing around
 	TelNo       string   `json:"telno"`
 	Age         int      `json:"age"`
-	Ocupation   string   `json:"ocupation"`
+	Occupation  string   `json:"occupation"`
 	AllowBroke  []Broker `json:"allowbroke"`
 	GauranteeID string   `json:"gauranteeid"`
 }
 
 type Broker struct {
-	Name     string `json:"name"`
-	BrokerNo int    `json:"brokerno"`
+	Name          string     `json:"name"`
+	BrokerNo      int        `json:"brokerno"`
+	AllowCustomer []Customer `json:"allowcustomer"`
 }
 
 // ============================================================================================================================
@@ -232,7 +233,7 @@ func (t *SimpleChaincode) new_customer(stub shim.ChaincodeStubInterface, args []
 	if err != nil {
 		return nil, errors.New("3rd argument must be a numeric string")
 	}
-	ocupation := strings.ToLower(args[3])
+	occupation := strings.ToLower(args[3])
 
 	//check if customer already exists
 	customerAsBytes, err := stub.GetState(name)
@@ -250,7 +251,7 @@ func (t *SimpleChaincode) new_customer(stub shim.ChaincodeStubInterface, args []
 	res.Name = name
 	res.TelNo = telno
 	res.Age = size
-	res.Ocupation = ocupation
+	res.Occupation = occupation
 	//build the customer json string manually
 	//str := `{"name": "` + name + `", "telno": "` + telno + `", "size": ` + strconv.Itoa(size) + `, "user": "` + user + `"}`
 	//err = stub.PutState(name, []byte(str)) //store customer with id as key
