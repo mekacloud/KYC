@@ -14,8 +14,15 @@ module.exports.process_msg = function(ws, data){
 	console.log('kyc part1 - process_msg');
 	if(data.v === 1){																						//only look at messages for part 1
 		if(data.type == 'create'){
-			console.log('its a create!');
+			console.log('kyc - its a create!');
 			if(data.name && data.telno && data.age && data.occupation){
+				chaincode.invoke.new_customer([data.name, data.telno, data.age, data.occupation], cb_invoked);	//create a new customer
+			}
+		}																					//only look at messages for part 1
+		if(data.type == 'createcustomer'){
+			console.log('its a createcustomer!');
+			if(data.name && data.telno && data.age && data.occupation){
+				console.log('kyc - c cus invoke');
 				chaincode.invoke.new_customer([data.name, data.telno, data.age, data.occupation], cb_invoked);	//create a new customer
 			}
 		}
@@ -60,7 +67,8 @@ module.exports.process_msg = function(ws, data){
 					chaincode.query.read([json[key]], function(e, customer) {
 						if(e != null) console.log('[ws error] did not get customer:', e);
 						else {
-							if(customer) sendMsg({msg: 'customers', e: e, customer: JSON.parse(customer)});
+							console.log('read !!!! ', JSON.parse(customer));
+							if(customer) sendMsg({msg: 'customer', e: e, customer: JSON.parse(customer)});
 							cb(null);
 						}
 					});
