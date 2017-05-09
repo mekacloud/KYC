@@ -26,18 +26,18 @@ function build_bag(){
 // Home
 // ============================================================================================================================
 router.route('/').get(function(req, res){
-	res.redirect('/kyc');
+	res.redirect('/ky');
 });
 
 // ============================================================================================================================
 // Part 1
 // ============================================================================================================================
-// router.route('/p1').get(function(req, res){
-// 	res.render('part1', {title: 'Marbles Part 1', bag: build_bag()});
-// });
-// router.route('/p1/:page?').get(function(req, res){
-// 	res.render('part1', {title: 'Marbles Part 1', bag: build_bag()});
-// });
+router.route('/p1').get(function(req, res){
+	res.render('part1', {title: 'KYC Part 1', bag: build_bag()});
+});
+router.route('/p1/:page?').get(function(req, res){
+	res.render('part1', {title: 'KYC Part 1', bag: build_bag()});
+});
 
 // ============================================================================================================================
 // Part 2
@@ -53,10 +53,10 @@ router.route('/').get(function(req, res){
 // ============================================================================================================================
 // KYC Part 1
 // ============================================================================================================================
-router.route('/kyc').get(function(req, res){
+router.route('/ky').get(function(req, res){
 	res.render('kycp1', {title: 'KYC Part 1', bag: build_bag()});
 });
-router.route('/kyc/:page?').get(function(req, res){
+router.route('/ky/:page?').get(function(req, res){
 	res.render('kycp1', {title: 'KYC Part 1', bag: build_bag()});
 });
 
