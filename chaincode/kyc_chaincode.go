@@ -246,6 +246,7 @@ func (t *SimpleChaincode) new_customer(stub shim.ChaincodeStubInterface, args []
 		return nil, errors.New("6th argument must be a non-empty string")
 	}
 
+	fmt.Println("- pass1 init customer")
 	name := args[0]
 	telno := strings.ToLower(args[1])
 	age, err := strconv.Atoi(args[2])
@@ -256,6 +257,7 @@ func (t *SimpleChaincode) new_customer(stub shim.ChaincodeStubInterface, args []
 	cardid := args[4]
 	creator := args[5]
 
+	fmt.Println("- pass2 init customer")
 	//check if customer already exists
 	customerAsBytes, err := stub.GetState(name)
 	if err != nil {
