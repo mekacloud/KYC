@@ -228,21 +228,27 @@ func (t *SimpleChaincode) new_customer(stub shim.ChaincodeStubInterface, args []
 	//input sanitation
 	fmt.Println("- start init customer")
 	if len(args[0]) <= 0 {
+		fmt.Println("- not pass0 init customer")
 		return nil, errors.New("1st argument must be a non-empty string")
 	}
 	if len(args[1]) <= 0 {
+		fmt.Println("- not pass1 init customer")
 		return nil, errors.New("2nd argument must be a non-empty string")
 	}
 	if len(args[2]) <= 0 {
+		fmt.Println("- not pass2 init customer")
 		return nil, errors.New("3rd argument must be a non-empty string")
 	}
 	if len(args[3]) <= 0 {
+		fmt.Println("- not pass3 init customer")
 		return nil, errors.New("4th argument must be a non-empty string")
 	}
 	if len(args[4]) <= 0 {
+		fmt.Println("- not pass4 init customer")
 		return nil, errors.New("5th argument must be a non-empty string")
 	}
 	if len(args[5]) <= 0 {
+		fmt.Println("- not pass5 init customer")
 		return nil, errors.New("6th argument must be a non-empty string")
 	}
 
