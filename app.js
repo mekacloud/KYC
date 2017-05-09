@@ -233,7 +233,7 @@ var options = 	{
 						git_url: 'http://gopkg.in/ibm-blockchain/customers.v2/chaincode',						//GO get http url*/
 						zip_url: 'https://github.com/mekacloud/kyc/archive/master.zip',
 						unzip_dir: 'kyc-master/chaincode',														//subdirectroy name of chaincode after unzipped
-						git_url: 'http://gopkg.in/mekacloud/kyc.v0/chaincode',									//GO get http url
+						git_url: 'http://gopkg.in/mekacloud/kyc.v1/chaincode',									//GO get http url
 					
 						//hashed cc name from prev deployment, comment me out to always deploy, uncomment me when its already deployed to skip deploying again
 						deployed_name: '61299d5f87f3f360c609ed9470ff8a53ace39d2d20371b0e210090299cddb87dcfa87ba1426672d35f362a6547ec2d433dedb5d2e1aa4bcb4e241097f815fc90'
