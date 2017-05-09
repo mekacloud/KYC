@@ -34,15 +34,25 @@ type SimpleChaincode struct {
 }
 
 var customerIndexStr = "_customerindex" //name for the key/value that will store a list of all known customers
-var openTradesStr = "_opentrades"       //name for the key/value that will store all open trades
+var brokerIndexStr = "_brokerindex"     //name for the key/value that will store a list of all known customers
+//var openTradesStr = "_opentrades"       //name for the key/value that will store all open trades
 
 type Customer struct {
-	Name        string   `json:"name"` //the fieldtags are needed to keep case from bouncing around
-	TelNo       string   `json:"telno"`
-	Age         int      `json:"age"`
-	Occupation  string   `json:"occupation"`
-	AllowBroke  []Broker `json:"allowbroke"`
+	Name       string `json:"name"` //the fieldtags are needed to keep case from bouncing around
+	CardID     string `json:"cardid"`
+	TelNo      string `json:"telno"`
+	Age        int    `json:"age"`
+	Occupation string `json:"occupation"`
+	Address    string `json:"address"`
+	Creator    string `json:"creator"`
+	//CustomerID string `json:"customerid"`
+
+}
+
+type GauranteeID struct {
 	GauranteeID string   `json:"gauranteeid"`
+	AllowBroke  []Broker `json:"allowbroke"`
+	CustomerID  string   `json:"customerid"`
 }
 
 type Broker struct {
@@ -126,6 +136,8 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 		return t.Write(stub, args)
 	} else if function == "new_customer" { //create a new customer
 		return t.new_customer(stub, args)
+	} else if function == "new_broke" {
+		return t.new_broke(stub, args)
 	} else if function == "set_user" { //change owner of a customer
 		res, err := t.set_user(stub, args)
 		//cleanTrades(stub) //lets make sure all open trades are still valid
@@ -207,9 +219,9 @@ func (t *SimpleChaincode) Write(stub shim.ChaincodeStubInterface, args []string)
 func (t *SimpleChaincode) new_customer(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
 
-	//   0       1       2     3
-	// "asdf", "blue", "35", "bob"
-	if len(args) != 4 {
+	//   0        1       2        3           4          5
+	// "name", "telno", "age", "occupation", "cardid", "creator"
+	if len(args) != 6 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 4")
 	}
 
@@ -227,13 +239,22 @@ func (t *SimpleChaincode) new_customer(stub shim.ChaincodeStubInterface, args []
 	if len(args[3]) <= 0 {
 		return nil, errors.New("4th argument must be a non-empty string")
 	}
+	if len(args[4]) <= 0 {
+		return nil, errors.New("5th argument must be a non-empty string")
+	}
+	if len(args[5]) <= 0 {
+		return nil, errors.New("6th argument must be a non-empty string")
+	}
+
 	name := args[0]
 	telno := strings.ToLower(args[1])
-	size, err := strconv.Atoi(args[2])
+	age, err := strconv.Atoi(args[2])
 	if err != nil {
 		return nil, errors.New("3rd argument must be a numeric string")
 	}
 	occupation := strings.ToLower(args[3])
+	cardid := args[4]
+	creator := args[5]
 
 	//check if customer already exists
 	customerAsBytes, err := stub.GetState(name)
@@ -250,8 +271,10 @@ func (t *SimpleChaincode) new_customer(stub shim.ChaincodeStubInterface, args []
 
 	res.Name = name
 	res.TelNo = telno
-	res.Age = size
+	res.Age = age
 	res.Occupation = occupation
+	res.CardID = cardid
+	res.Creator = creator
 	//build the customer json string manually
 	//str := `{"name": "` + name + `", "telno": "` + telno + `", "size": ` + strconv.Itoa(size) + `, "user": "` + user + `"}`
 	//err = stub.PutState(name, []byte(str)) //store customer with id as key
@@ -260,8 +283,12 @@ func (t *SimpleChaincode) new_customer(stub shim.ChaincodeStubInterface, args []
 	if err != nil {
 		return nil, err
 	}
+	err = stub.PutState(cardid, str)
+	if err != nil {
+		return nil, err
+	}
 
-	//get the customer index
+	//get the customer index-
 	customersAsBytes, err := stub.GetState(customerIndexStr)
 	if err != nil {
 		return nil, errors.New("Failed to get customer index")
@@ -270,12 +297,82 @@ func (t *SimpleChaincode) new_customer(stub shim.ChaincodeStubInterface, args []
 	json.Unmarshal(customersAsBytes, &customerIndex) //un stringify it aka JSON.parse()
 
 	//append
-	customerIndex = append(customerIndex, name) //add customer name to index list
+	customerIndex = append(customerIndex, cardid) //add customer name to index list
 	fmt.Println("! customer index: ", customerIndex)
 	jsonAsBytes, _ := json.Marshal(customerIndex)
 	err = stub.PutState(customerIndexStr, jsonAsBytes) //store name of customer
 
 	fmt.Println("- end init customer")
+	return nil, nil
+}
+
+// ============================================================================================================================
+// Init Broke - create a new broke, store into chaincode state
+// ============================================================================================================================
+func (t *SimpleChaincode) new_broke(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var err error
+
+	//   0        1
+	// "name", "brokeID"
+	if len(args) != 6 {
+		return nil, errors.New("Incorrect number of arguments. Expecting 4")
+	}
+
+	//input sanitation
+	fmt.Println("- start init customer")
+	if len(args[0]) <= 0 {
+		return nil, errors.New("1st argument must be a non-empty string")
+	}
+	if len(args[1]) <= 0 {
+		return nil, errors.New("2nd argument must be a non-empty string")
+	}
+
+	name := args[0]
+	brokeNoAsString := args[1]
+	brokeNo, err := strconv.Atoi(args[1])
+	if err != nil {
+		return nil, errors.New("2nd argument must be a numeric string")
+	}
+
+	//check if broker already exists
+	brokerAsBytes, err := stub.GetState(brokeNoAsString)
+	if err != nil {
+		return nil, errors.New("Failed to get broker name")
+	}
+	res := Broker{}
+	json.Unmarshal(brokerAsBytes, &res)
+	if res.BrokerNo == brokeNo {
+		fmt.Println("This broker arleady exists: " + name)
+		fmt.Println(res)
+		return nil, errors.New("This broker arleady exists") //all stop a broker by this name exists
+	}
+
+	res.Name = name
+	res.BrokerNo = brokeNo
+	//build the broker json string manually
+	//str := `{"name": "` + name + `", "telno": "` + telno + `", "size": ` + strconv.Itoa(size) + `, "user": "` + user + `"}`
+	//err = stub.PutState(name, []byte(str)) //store broker with id as key
+	str, err := json.Marshal(res)
+	err = stub.PutState(brokeNoAsString, str)
+	if err != nil {
+		return nil, err
+	}
+
+	//get the broker index-
+	brokersAsBytes, err := stub.GetState(brokerIndexStr)
+	if err != nil {
+		return nil, errors.New("Failed to get broker index")
+	}
+	var brokerIndex []string
+	json.Unmarshal(brokersAsBytes, &brokerIndex) //un stringify it aka JSON.parse()
+
+	//append
+	brokerIndex = append(brokerIndex, brokeNoAsString) //add broker name to index list
+	fmt.Println("! broker index: ", brokerIndex)
+	jsonAsBytes, _ := json.Marshal(brokerIndex)
+	err = stub.PutState(brokerIndexStr, jsonAsBytes) //store name of broker
+
+	fmt.Println("- end init broker")
 	return nil, nil
 }
 
