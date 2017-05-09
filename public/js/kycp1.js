@@ -20,15 +20,17 @@ $(document).on('ready', function() {
 						telno: $('input[name="telno"]').val(),
 						age: $('select[name="age"]').val(),
 						occupation: $('input[name="occupation"]').val(),
+						cardid: $('input[name="cardid"]').vale(),
+						creator: 'kyc-agent',
 						v: 1
 					};
 		if(obj.name && obj.telno){
 			console.log('creating customer, sending', obj);
 			ws.send(JSON.stringify(obj));
 			showHomePanel();
-			$('.colorValue').html('Color');											//reset
-			for(var i in bgcolors) $('.createball').removeClass(bgcolors[i]);		//reset
-			$('.createball').css('border', '2px dashed #fff');						//reset
+			// $('.colorValue').html('Color');											//reset
+			// for(var i in bgcolors) $('.createball').removeClass(bgcolors[i]);		//reset
+			// $('.createball').css('border', '2px dashed #fff');						//reset
 		}
 		return false;
 	});
