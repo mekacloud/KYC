@@ -20,7 +20,7 @@ $(document).on('ready', function() {
 						telno: $('input[name="telno"]').val(),
 						age: $('select[name="age"]').val(),
 						occupation: $('input[name="occupation"]').val(),
-						cardid: $('input[name="cardid"]').vale(),
+						cardid: $('input[name="cardid"]').val(),
 						creator: 'kyc-agent',
 						v: 1
 					};
@@ -34,9 +34,33 @@ $(document).on('ready', function() {
 		}
 		return false;
 	});
+
+
+	$('#submitbroker').click(function(){
+		console.log('creating broker');
+		var obj = 	{
+						type: 'createbroker',
+						name: $('input[name="brokername"]').val(),
+						brokeno: $('input[name="brokeno"]').val(),
+						v: 1
+					};
+		if(obj.name && obj.brokeno){
+			console.log('creating customer, sending', obj);
+			ws.send(JSON.stringify(obj));
+			showHomePanel();
+			// $('.colorValue').html('Color');											//reset
+			// for(var i in bgcolors) $('.createball').removeClass(bgcolors[i]);		//reset
+			// $('.createball').css('border', '2px dashed #fff');						//reset
+		}
+		return false;
+	});
 	
 	$('#customerLink').click(function(){
 		showHomePanel();
+	});
+
+	$('#createcustomerLink').click(function(){
+		showCreateCustomerPanel();
 	});
 
 	$('#createLink').click(function(){
@@ -62,7 +86,7 @@ $(document).on('ready', function() {
 	
 	
 	//drag and drop marble
-	$('#customerwrap, #trashbin').sortable({connectWith: '.sortable'}).disableSelection();
+	$('#customerwrap, #editpane').sortable({connectWith: '.sortable'}).disableSelection();
 	$('#customerwrap').droppable({drop:
 		function( event, ui ) {
 			var user = $(ui.draggable).attr('user');
@@ -72,7 +96,7 @@ $(document).on('ready', function() {
 			}
 		}
 	});
-	// $('#user1wrap').droppable({drop:
+	// $('#brokerwrap').droppable({drop:
 	// 	function( event, ui ) {
 	// 		var user = $(ui.draggable).attr('user');
 	// 		if(user.toLowerCase() != bag.setup.USER1){
@@ -81,27 +105,33 @@ $(document).on('ready', function() {
 	// 		}
 	// 	}
 	// });
-	$('#trashbin').droppable({drop:
+	$('#editpane').droppable({drop:
 		function( event, ui ) {
-			var id = $(ui.draggable).attr('id');
-			if(id){
-				console.log('removing marble', id);
-				var obj = 	{
-								type: 'remove',
-								name: id,
-								v: 1
-							};
-				ws.send(JSON.stringify(obj));
-				$(ui.draggable).fadeOut();
-				setTimeout(function(){
-					$(ui.draggable).remove();
-				}, 300);
-				showHomePanel();
+			var cardid = $(ui.draggable).attr('cardid');
+			console.log('edit customer ', cardid);
+			if(cardid){
+				console.log('editing customer', cardid);
+				// var obj = 	{
+				// 				type: 'remove',
+				// 				name: cardid,
+				// 				v: 1
+				// 			};
+				// ws.send(JSON.stringify(obj));
+				// $(ui.draggable).fadeOut();
+				// setTimeout(function(){
+				// 	$(ui.draggable).remove();
+				// }, 300);
+				openEditCustomer(cardid);
 			}
 		}
 	});
 	
 	
+	function openEditCustomer(cardid){
+		//$('')
+		console.log('edit ', cardid);
+	}
+
 	// =================================================================================
 	// Helper Fun
 	// ================================================================================
@@ -109,6 +139,7 @@ $(document).on('ready', function() {
 	function showHomePanel(){
 		$('#customerPanel').fadeIn(300);
 		$('#createcustomerPanel').hide();
+		$('#createbrokerPanel').hide();
 		
 		var part = window.location.pathname.substring(0,3);
 		console.log('kycp1 - part ', part);
@@ -119,8 +150,27 @@ $(document).on('ready', function() {
 			$('#customerwrap').html('');											//reset the panel
 			$('#brokerwrap').html('');
 			ws.send(JSON.stringify({type: 'get', v: 1}));						//need to wait a bit
+			ws.send(JSON.stringify({type: 'getbroker', v: 1}));						//need to wait a bit
 			ws.send(JSON.stringify({type: 'chainstats', v: 1}));
 		}, 1000);
+	}
+
+	function showCreateCustomerPanel(){
+		//$('#customerPanel').fadeIn(300);
+		//$('#createcustomerPanel').hide();
+		//$('#createbrokerPanel').hide();
+		
+		var part = window.location.pathname.substring(0,3);
+		console.log('kycp1 - part ', part);
+		window.history.pushState({},'', part + '/createcustomer');			//put it in url so we can f5
+		
+		// console.log('getting new balls');
+		// setTimeout(function(){
+		// 	$('#customerwrap').html('');											//reset the panel
+		// 	$('#brokerwrap').html('');
+		// 	ws.send(JSON.stringify({type: 'get', v: 1}));						//need to wait a bit
+		// 	ws.send(JSON.stringify({type: 'chainstats', v: 1}));
+		// }, 1000);
 	}
 	
 	//transfer selected ball to user
@@ -170,6 +220,7 @@ function connect_to_server(){
 		clear_blocks();
 		$('#errorNotificationPanel').fadeOut();
 		ws.send(JSON.stringify({type: 'get', v:1}));
+		ws.send(JSON.stringify({type: 'getbroker', v:1}));
 		ws.send(JSON.stringify({type: 'chainstats', v:1}));
 	}
 
@@ -190,6 +241,10 @@ function connect_to_server(){
 			else if(msgObj.customer){
 				console.log('rec - cus', msgObj.msg, msgObj);
 				build_customer(msgObj.customer);
+			}
+			else if (msgObj.broker){
+				console.log('rec- broke', msgObj.msg, msgObj);
+				build_broker(msgObj.broker);
 			}
 			else if(msgObj.msg === 'chainstats'){
 				console.log('rec', msgObj.msg, ': ledger blockheight', msgObj.chainstats.height, 'block', msgObj.blockstats.height);
@@ -267,9 +322,37 @@ function build_customer(data){
 		if(data.color) colorClass = data.color.toLowerCase();
 		
 		//html += '<span id="' + data.name + '" class="fa fa-circle ' + size + ' ball ' + colorClass + ' title="' + data.name + '" user="customer">'+data.name+'</span>';
-		html += '<span style="font-size: 200%" id="' + data.name + '" class="fa fa-square fa-1x ball blue title="' + data.name +'">  '+data.name+'  </span>'
+		html += '<span style="font-size: 200%" cardid="' + data.cardid + '" class="fa fa-square fa-1x ball blue title="' + data.name +'">  '+data.name+'  </span>'
 		//if(data.user && data.user.toLowerCase() == bag.setup.USER1){
 			$('#customerwrap').append(html);
+		//}
+		// else{
+		// 	$('#user2wrap').append(html);
+		// }
+	}
+	console.log('html after build - ', html);
+	return html;
+}
+
+function build_broker(data){
+	var html = '';
+	var colorClass = '';
+	var size = 'fa-5x';
+	
+	console.log('data', data);
+	data.name = escapeHtml(data.name);
+	data.color = escapeHtml('red');
+	//data.user = escapeHtml(data.user);
+	
+	console.log('got a broker: ', data.color);
+	if(!$('#' + data.name).length){								//only populate if it doesn't exists
+		//if(data.size == 16) size = 'fa-3x';
+		if(data.color) colorClass = data.color.toLowerCase();
+		
+		//html += '<span id="' + data.name + '" class="fa fa-circle ' + size + ' ball ' + colorClass + ' title="' + data.name + '" user="customer">'+data.name+'</span>';
+		html += '<span style="font-size: 200%" id="' + data.name + '" class="fa fa-circle fa-1x ball red title="' + data.name +'">  '+data.name+'  </span>'
+		//if(data.user && data.user.toLowerCase() == bag.setup.USER1){
+			$('#brokerwrap').append(html);
 		//}
 		// else{
 		// 	$('#user2wrap').append(html);

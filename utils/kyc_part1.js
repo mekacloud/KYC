@@ -19,17 +19,26 @@ module.exports.process_msg = function(ws, data){
 				chaincode.invoke.new_customer([data.name, data.telno, data.age, data.occupation], cb_invoked);	//create a new customer
 			}
 		}																					//only look at messages for part 1
-		if(data.type == 'createcustomer'){
+		else if(data.type == 'createcustomer'){
 			console.log('its a createcustomer!');
 			if(data.name && data.telno && data.age && data.occupation){
 				console.log('kyc - c cus invoke');
-				chaincode.invoke.new_customer([data.name, data.telno, data.age, data.occupation], cb_invoked);	//create a new customer
+				chaincode.invoke.new_customer([data.name, data.telno, data.age, data.occupation, data.cardid, data.creator], cb_invoked);	//create a new customer
 			}
 		}
-        
+        else if (data.type == 'createbroker'){
+			console.log('its a createbroker!');
+			if (data.name && data.brokeno){
+				chaincode.invoke.new_broke([data.name, data.brokeno]);
+			}
+		}
 		else if(data.type == 'get'){
 			console.log('get customers msg');
 			chaincode.query.read(['_customerindex'], cb_got_index);
+		}
+		else if(data.type == 'getbroker'){
+			console.log('get broker msg');
+			chaincode.query.read(['_brokerindex'], cb_got_broker_index);
 		}
         /*
 		else if(data.type == 'transfer'){
@@ -69,6 +78,36 @@ module.exports.process_msg = function(ws, data){
 						else {
 							console.log('read !!!! ', JSON.parse(customer));
 							if(customer) sendMsg({msg: 'customer', e: e, customer: JSON.parse(customer)});
+							cb(null);
+						}
+					});
+				}, function() {
+					sendMsg({msg: 'action', e: e, status: 'finished'});
+				});
+			}
+			catch(e){
+				console.log('[ws error] could not parse response', e);
+			}
+		}
+	}
+
+	function cb_got_broker_index(e, index){
+		console.log('index', index);
+		if(e != null) console.log('[ws error] did not get broker index:', e);
+		else{
+			try{
+				var json = JSON.parse(index);
+				var keys = Object.keys(json);
+				var concurrency = 1;
+
+				//serialized version
+				async.eachLimit(keys, concurrency, function(key, cb) {
+					console.log('!', json[key]);
+					chaincode.query.read([json[key]], function(e, broker) {
+						if(e != null) console.log('[ws error] did not get customer:', e);
+						else {
+							console.log('read !!!! ', JSON.parse(broker));
+							if(broker) sendMsg({msg: 'broker', e: e, broker: JSON.parse(broker)});
 							cb(null);
 						}
 					});

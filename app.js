@@ -231,12 +231,13 @@ var options = 	{
 						/*zip_url: 'https://github.com/ibm-blockchain/customers/archive/v2.0.zip',
 						unzip_dir: 'customers-2.0/chaincode',													//subdirectroy name of chaincode after unzipped
 						git_url: 'http://gopkg.in/ibm-blockchain/customers.v2/chaincode',						//GO get http url*/
-						zip_url: 'https://github.com/mekacloud/kyc/archive/master.zip',
-						unzip_dir: 'kyc-master/chaincode',														//subdirectroy name of chaincode after unzipped
+						zip_url: 'https://github.com/mekacloud/kyc/archive/v1.0.zip',
+						unzip_dir: 'kyc-1.0/chaincode',														//subdirectroy name of chaincode after unzipped
 						git_url: 'http://gopkg.in/mekacloud/kyc.v1/chaincode',									//GO get http url
 					
 						//hashed cc name from prev deployment, comment me out to always deploy, uncomment me when its already deployed to skip deploying again
-						deployed_name: '61299d5f87f3f360c609ed9470ff8a53ace39d2d20371b0e210090299cddb87dcfa87ba1426672d35f362a6547ec2d433dedb5d2e1aa4bcb4e241097f815fc90'
+						// master- // deployed_name: '61299d5f87f3f360c609ed9470ff8a53ace39d2d20371b0e210090299cddb87dcfa87ba1426672d35f362a6547ec2d433dedb5d2e1aa4bcb4e241097f815fc90'
+						deployed_name: '969e220b6e1217a690a769b7c8f161bd04a4619852d8e8670765b5367b1e8cf5443112f5029752809afce3b0b265954e1432ba7cf3823f40e858e7f3d4d182c2'
 					}
 				};
 if(process.env.VCAP_SERVICES){
@@ -246,7 +247,7 @@ if(process.env.VCAP_SERVICES){
 
 // ---- Fire off SDK ---- //
 var chaincode = null;																		//sdk will populate this var in time, lets give it high scope by creating it here
-console.log('peer : ',options.network.peers)
+//console.log('peer : ',options.network.peers)
 console.log('============================================================')
 ibc.load(options, function (err, cc){														//parse/load chaincode, response has chaincode functions!
 	console.log('cc : ', cc)
@@ -369,6 +370,7 @@ function cb_deployed(e){
 				ibc.block_stats(chain_stats.height - 1, cb_blockstats);
 				wss.broadcast({msg: 'reset'});
 				chaincode.query.read(['_customerindex'], cb_got_index);
+				chaincode.query.read(['_brokerindex'], cb_got_broker_index);
 				//chaincode.query.read(['_opentrades'], cb_got_trades);
 			}
 			
@@ -398,7 +400,7 @@ function cb_deployed(e){
 					}
 				}
 			}
-			
+
 			//call back for getting a customer, lets send a message
 			function cb_got_customer(e, customer){
 				if(e != null) console.log('customer error:', e);
@@ -408,6 +410,36 @@ function cb_deployed(e){
 					}
 					catch(e){
 						console.log('customer msg error', e);
+					}
+				}
+			}
+
+			//got the broker index, lets get each broker
+			function cb_got_broker_index(e, index){
+				if(e != null) console.log('broker index error:', e);
+				else{
+					try{
+						var json = JSON.parse(index);
+						for(var i in json){
+							console.log('!', i, json[i]);
+							chaincode.query.read([json[i]], cb_got_broker);					//iter over each, read their values
+						}
+					}
+					catch(e){
+						console.log('broker index msg error:', e);
+					}
+				}
+			}
+			
+			//call back for getting a customer, lets send a message
+			function cb_got_broker(e, broker){
+				if(e != null) console.log('broker error:', e);
+				else {
+					try{
+						wss.broadcast({msg: 'broker', broker: JSON.parse(broker)});
+					}
+					catch(e){
+						console.log('broker msg error', e);
 					}
 				}
 			}

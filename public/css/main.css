@@ -313,7 +313,7 @@ label {
   bottom: 55px;
   margin-left: -50px; }
 
-#trashbin {
+#editpane, #trashbin {
   width: 200px;
   height: 70px;
   margin: auto;
