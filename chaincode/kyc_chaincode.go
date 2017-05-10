@@ -322,7 +322,7 @@ func (t *SimpleChaincode) new_broke(stub shim.ChaincodeStubInterface, args []str
 
 	//   0        1
 	// "name", "brokeID"
-	if len(args) != 6 {
+	if len(args) != 2 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 4")
 	}
 
