@@ -583,7 +583,7 @@ func (t *SimpleChaincode) newbroke(stub shim.ChaincodeStubInterface, args []stri
 	//str := `{"name": "` + name + `", "telno": "` + telno + `", "size": ` + strconv.Itoa(size) + `, "user": "` + user + `"}`
 	//err = stub.PutState(name, []byte(str)) //store broker with id as key
 	str, err := json.Marshal(res)
-	err = stub.PutState(brokeNoAsString, str)
+	err = stub.PutState(BrokerKey+brokeNoAsString, str)
 	if err != nil {
 		return nil, err
 	}
