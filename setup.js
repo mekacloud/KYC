@@ -66,3 +66,5 @@ exports.SERVER.vcap_app = vcap_app;
 exports.DEBUG = vcap_app;
 exports.USER1 = 'bob';									//left username
 exports.USER2 = 'leroy';								//right username
+exports.BROKER1 = 'bls';
+exports.BROKER1NO = '110';

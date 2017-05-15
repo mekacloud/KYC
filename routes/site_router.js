@@ -59,5 +59,14 @@ router.route('/ky').get(function(req, res){
 router.route('/ky/:page?').get(function(req, res){
 	res.render('kycp1', {title: 'KYC Part 1', bag: build_bag()});
 });
+// ============================================================================================================================
+// Broke
+// ============================================================================================================================
+router.route('/br').get(function(req, res){
+	res.render('broke', {title: 'Broker Page', bag: build_bag()});
+});
+router.route('/br/:page?').get(function(req, res){
+	res.render('broke', {title: 'Broker Page', bag: build_bag()});
+});
 
 module.exports = router;

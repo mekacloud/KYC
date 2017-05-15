@@ -40,6 +40,14 @@ module.exports.process_msg = function(ws, data){
 			console.log('get broker msg');
 			chaincode.query.read(['_brokerindex'], cb_got_broker_index);
 		}
+		else if(data.type == 'getcus'){
+			console.log('get cus msg');
+			chaincode.query.read([data.cusid], cb_got_cus);
+		}
+		else if(data.type == 'getcustomerofbroke'){
+			console.log('get customer of broker msg');
+			chaincode.query.read([data.brokeno], cb_got_broker);
+		}
         /*
 		else if(data.type == 'transfer'){
 			console.log('transfering msg');
@@ -86,6 +94,53 @@ module.exports.process_msg = function(ws, data){
 				});
 			}
 			catch(e){
+				console.log('[ws error] could not parse response', e);
+			}
+		}
+	}
+
+	function cb_got_broker(e, brokeinfo){
+		if(e!=null) console.log('[ws error] did not get broke', e);
+		else{
+			try{
+				console.log('cb got broker', brokeinfo);
+				var broker = JSON.parse(brokeinfo);
+				if (broker.allowcustomer){
+					var keys = Object.keys(broker.allowcustomer);
+					var concurrency = 1;
+
+					async.eachLimit(keys, concurrency, function(key, cb) {
+						console.log('!', broker[key]);
+						chaincode.query.read([broker[key], broker.brokeno], function(e, customer) {
+							if(e != null) console.log('[ws error] did not get customer:', e);
+							else {
+								console.log('read !!!! ', JSON.parse(customer));
+								if (customer) sendMsg({msg: 'customer', e:e, customer: JSON.parse(broker)});
+								cb(null);
+							}
+						});
+					}, function() {
+						sendMsg({msg: 'action', e:e, status: 'finished'});
+					});
+				}
+			}
+			catch(e){
+				console.log('[ws error] could not parse response', e);
+			}
+		}
+	}
+	function cb_got_cus(e, customer){
+		if(e!=null)console.log('[ws error] did not get customer:', e);
+		else{
+			try {
+				console.log('customer', customer);
+				var json = JSON.parse(customer);
+				if (json.name){
+					console.log('json.name', json.name);
+					sendMsg({msg: 'cusname', e: e, cusname: json.name});
+				}
+				sendMsg({msg: 'action', e:e, status: 'finished'});
+			}catch(e){
 				console.log('[ws error] could not parse response', e);
 			}
 		}

@@ -1,0 +1,39 @@
+extends ./template/layout.jade
+	
+	
+// --------------- Header -------------- //
+block custom_header
+	script(src='/js/broke.js?v=#{bag.jshash}')
+	script(type='text/javascript').
+		$(document).ready(function(){
+			
+		});
+		
+		
+// --------------- Navigation Bar  -------------- //
+block navpanel
+	include ./template/nav_broke.jade
+	
+	
+// --------------- Main Stuff  -------------- //
+block content
+	#contentPanel
+		
+		#blockdate(title="date of last block") loading...
+		
+		
+		// --------------- Home Panel
+		//- include ./panel_home.jade
+
+		// --------------- KYC Home
+		include ./panel_customerofbroke.jade
+		
+		
+		// --------------- Create Panel
+		include ./panel_requestcustomer.jade
+
+		// --------------- Create Broker Panel
+		//include ./panel_customerdetail.jade
+		
+block footer
+	include ./template/blockchain.jade
