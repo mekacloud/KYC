@@ -328,7 +328,7 @@ func (t *SimpleChaincode) requestPermission(stub shim.ChaincodeStubInterface, ar
 
 	jsonBrokerAsBytes, err := json.Marshal(broker)
 	fmt.Printf("Broke %s\n", jsonBrokerAsBytes)
-	err = stub.PutState(brokerIndexStr+brokeNoAsString, jsonBrokerAsBytes) //write the variable into the chaincode state
+	err = stub.PutState(BrokerKey+brokeNoAsString, jsonBrokerAsBytes) //write the variable into the chaincode state
 	if err != nil {
 		return nil, err
 	}
