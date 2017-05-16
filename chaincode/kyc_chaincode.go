@@ -519,7 +519,7 @@ func (t *SimpleChaincode) newcustomer(stub shim.ChaincodeStubInterface, args []s
 	gauranteeID.AllowBroke = emptyIntArray
 	gauranteeID.PendingBroke = emptyIntArray
 
-	str, err = json.Marshal(res)
+	str, err = json.Marshal(gauranteeID)
 	err = stub.PutState(GauranteeIDKey+gauranteeID.GauranteeID, str)
 	if err != nil {
 		return nil, err
