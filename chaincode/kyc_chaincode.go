@@ -365,13 +365,13 @@ func (t *SimpleChaincode) customerallow(stub shim.ChaincodeStubInterface, args [
 	broke := Broker{}
 	json.Unmarshal(brokeAsBytes, &broke)
 
-	for i := len(gau.PendingBroke); i >= 0; i-- {
+	for i := len(gau.PendingBroke) - 1; i >= 0; i-- {
 		if gau.PendingBroke[i] == brokeNo {
 			gau.PendingBroke = append(gau.PendingBroke[:i], gau.PendingBroke[i+1:]...)
 			break
 		}
 	}
-	for i := len(broke.PendingCustomer); i >= 0; i-- {
+	for i := len(broke.PendingCustomer) - 1; i >= 0; i-- {
 		if broke.PendingCustomer[i] == gid {
 			broke.PendingCustomer = append(broke.PendingCustomer[:i], broke.PendingCustomer[i+1:]...)
 			break
