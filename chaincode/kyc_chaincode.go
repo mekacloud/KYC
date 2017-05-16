@@ -297,6 +297,7 @@ func (t *SimpleChaincode) requestPermission(stub shim.ChaincodeStubInterface, ar
 	json.Unmarshal(gidAsbytes, &gau)
 
 	already := false
+	fmt.Println(gidAsbytes)
 	for _, s := range gau.AllowBroke {
 		//set[s] = struct{}{}
 		if s.BrokerNo == brokeNo {
