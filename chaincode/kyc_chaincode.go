@@ -63,10 +63,10 @@ type Customer struct {
 
 //GauranteeID generate from Customer
 type GauranteeID struct {
-	GauranteeID  string   `json:"gauranteeid"`
-	CustomerID   string   `json:"customerid"`
-	AllowBroke   []Broker `json:"allowbroke"`
-	PendingBroke []Broker `json:"pendingbroke"`
+	GauranteeID  string `json:"gauranteeid"`
+	CustomerID   string `json:"customerid"`
+	AllowBroke   []int  `json:"allowbroke"`
+	PendingBroke []int  `json:"pendingbroke"`
 }
 
 // type CusGauID struct {
@@ -77,10 +77,10 @@ type GauranteeID struct {
 
 // Broker Contain Name and Number and AllowCustomer
 type Broker struct {
-	Name            string        `json:"name"`
-	BrokerNo        int           `json:"brokerno"`
-	AllowCustomer   []GauranteeID `json:"allowcustomer"`
-	PendingCustomer []GauranteeID `json:"pendingcustomer"`
+	Name            string   `json:"name"`
+	BrokerNo        int      `json:"brokerno"`
+	AllowCustomer   []string `json:"allowcustomer"`
+	PendingCustomer []string `json:"pendingcustomer"`
 }
 
 // Main
@@ -298,10 +298,10 @@ func (t *SimpleChaincode) requestPermission(stub shim.ChaincodeStubInterface, ar
 
 	already := false
 	fmt.Printf("GID %s\n", gidAsbytes)
-	fmt.Printf("brokeno %d", brokeNo)
+	fmt.Printf("brokeno %d\n", brokeNo)
 	for _, s := range gau.AllowBroke {
 		//set[s] = struct{}{}
-		if s.BrokerNo == brokeNo {
+		if s == brokeNo {
 			already = true
 		}
 	}
@@ -313,8 +313,8 @@ func (t *SimpleChaincode) requestPermission(stub shim.ChaincodeStubInterface, ar
 		return nil, errors.New(jsonResp)
 	}
 
-	gau.AllowBroke = append(gau.AllowBroke, broker)
-	broker.PendingCustomer = append(broker.PendingCustomer, gau)
+	gau.PendingBroke = append(gau.PendingBroke, brokeNo)
+	broker.PendingCustomer = append(broker.PendingCustomer, gau.GauranteeID)
 
 	fmt.Println("gau.AllowBroke")
 	fmt.Println(gau.AllowBroke)
@@ -366,26 +366,26 @@ func (t *SimpleChaincode) customerallow(stub shim.ChaincodeStubInterface, args [
 	json.Unmarshal(brokeAsBytes, &broke)
 
 	for i := len(gau.PendingBroke); i >= 0; i-- {
-		if gau.PendingBroke[i].BrokerNo == brokeNo {
+		if gau.PendingBroke[i] == brokeNo {
 			gau.PendingBroke = append(gau.PendingBroke[:i], gau.PendingBroke[i+1:]...)
 			break
 		}
 	}
 	for i := len(broke.PendingCustomer); i >= 0; i-- {
-		if broke.PendingCustomer[i].GauranteeID == gid {
+		if broke.PendingCustomer[i] == gid {
 			broke.PendingCustomer = append(broke.PendingCustomer[:i], broke.PendingCustomer[i+1:]...)
 			break
 		}
 	}
 	already := false
 	for _, s := range gau.AllowBroke {
-		if s.BrokerNo == brokeNo {
+		if s == brokeNo {
 			already = true
 		}
 	}
 	if !already {
-		gau.AllowBroke = append(gau.AllowBroke, broke)
-		broke.AllowCustomer = append(broke.AllowCustomer, gau)
+		gau.AllowBroke = append(gau.AllowBroke, brokeNo)
+		broke.AllowCustomer = append(broke.AllowCustomer, gid)
 	}
 
 	//write state
@@ -513,11 +513,11 @@ func (t *SimpleChaincode) newcustomer(stub shim.ChaincodeStubInterface, args []s
 	sha256AsByte := sha256.Sum256(str)
 
 	gauranteeID := GauranteeID{}
-	var emptyBroke []Broker
+	var emptyIntArray []int
 	gauranteeID.GauranteeID = strings.ToUpper(hex.EncodeToString(sha256AsByte[:]))
 	gauranteeID.CustomerID = res.CardID
-	gauranteeID.AllowBroke = emptyBroke
-	gauranteeID.PendingBroke = emptyBroke
+	gauranteeID.AllowBroke = emptyIntArray
+	gauranteeID.PendingBroke = emptyIntArray
 
 	str, err = json.Marshal(res)
 	err = stub.PutState(GauranteeIDKey+gauranteeID.GauranteeID, str)
