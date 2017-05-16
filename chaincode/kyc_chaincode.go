@@ -170,6 +170,9 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 	if function == "readcustomer" { //read a variable
 		return t.readcustomer(stub, args)
 	}
+	if function == "readcustomergid" {
+		return t.readcustomergid(stub, args)
+	}
 	if function == "readbroker" { //read a variable
 		return t.readbroker(stub, args)
 	}
