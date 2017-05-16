@@ -297,13 +297,16 @@ func (t *SimpleChaincode) requestPermission(stub shim.ChaincodeStubInterface, ar
 	json.Unmarshal(gidAsbytes, &gau)
 
 	already := false
-	fmt.Println(gidAsbytes)
+	fmt.Printf("GID %s\n", gidAsbytes)
+	fmt.Printf("brokeno %d", brokeNo)
 	for _, s := range gau.AllowBroke {
 		//set[s] = struct{}{}
 		if s.BrokerNo == brokeNo {
 			already = true
 		}
 	}
+
+	fmt.Println("already" + strconv.FormatBool(already))
 
 	if already {
 		jsonResp := "{\"Error\":\"Already Allowed " + brokeNoAsString + "\"}"
@@ -312,6 +315,9 @@ func (t *SimpleChaincode) requestPermission(stub shim.ChaincodeStubInterface, ar
 
 	gau.AllowBroke = append(gau.AllowBroke, broker)
 	broker.PendingCustomer = append(broker.PendingCustomer, gau)
+
+	fmt.Println("gau.AllowBroke")
+	fmt.Println(gau.AllowBroke)
 
 	jsonAsBytes, err := json.Marshal(gau)
 	fmt.Printf("GID %s\n", jsonAsBytes)
