@@ -141,6 +141,7 @@ require('cf-deployment-tracker-client').track();		//reports back to us, this hel
 //var part1 = require('./utils/ws_part1');														//websocket message processing for part 1
 //var part2 = require('./utils/ws_part2');														//websocket message processing for part 2
 var kycp1 = require('./utils/kyc_part1');
+var kycbr = require('./utils/kyc_partbroke.js')
 var ws = require('ws');																			//websocket mod
 var wss = {};
 var Ibc1 = require('ibm-blockchain-js');														//rest based SDK for ibm blockchain
@@ -231,13 +232,13 @@ var options = 	{
 						/*zip_url: 'https://github.com/ibm-blockchain/customers/archive/v2.0.zip',
 						unzip_dir: 'customers-2.0/chaincode',													//subdirectroy name of chaincode after unzipped
 						git_url: 'http://gopkg.in/ibm-blockchain/customers.v2/chaincode',						//GO get http url*/
-						zip_url: 'https://github.com/mekacloud/kyc/archive/v1.0.zip',
-						unzip_dir: 'kyc-1.0/chaincode',														//subdirectroy name of chaincode after unzipped
-						git_url: 'http://gopkg.in/mekacloud/kyc.v1/chaincode',									//GO get http url
+						zip_url: 'https://github.com/mekacloud/kyc/archive/v2.0.zip',
+						unzip_dir: 'kyc-2.0/chaincode',														//subdirectroy name of chaincode after unzipped
+						git_url: 'http://gopkg.in/mekacloud/kyc.v2/chaincode',									//GO get http url
 					
 						//hashed cc name from prev deployment, comment me out to always deploy, uncomment me when its already deployed to skip deploying again
 						// master- // deployed_name: '61299d5f87f3f360c609ed9470ff8a53ace39d2d20371b0e210090299cddb87dcfa87ba1426672d35f362a6547ec2d433dedb5d2e1aa4bcb4e241097f815fc90'
-						deployed_name: '969e220b6e1217a690a769b7c8f161bd04a4619852d8e8670765b5367b1e8cf5443112f5029752809afce3b0b265954e1432ba7cf3823f40e858e7f3d4d182c2'
+						deployed_name: '694be964dc898490b8e73c45f0c8fb6c200c23c27085182b0f0ab120b2d6164c384688c3bc854e96f85cc3a3d384b8640ecc1f071ea4896fa6effde1c9547dea'
 					}
 				};
 if(process.env.VCAP_SERVICES){
@@ -261,6 +262,7 @@ ibc.load(options, function (err, cc){														//parse/load chaincode, respo
 		//part1.setup(ibc, cc);																//pass the cc obj to part 1 node code
 		//part2.setup(ibc, cc);																//pass the cc obj to part 2 node code
 		kycp1.setup(ibc, cc);
+		kycbr.setup(ibc, cc);
 
 
 		// ---- To Deploy or Not to Deploy ---- //
@@ -340,6 +342,7 @@ function cb_deployed(e){
 					//part1.process_msg(ws, data);											//pass the websocket msg to part 1 processing
 					//part2.process_msg(ws, data);											//pass the websocket msg to part 2 processing
 					kycp1.process_msg(ws, data);
+					kycbr.process_msg(ws, data)
 				}
 				catch(e){
 					console.log('ws message error', e);
@@ -392,7 +395,7 @@ function cb_deployed(e){
 						var json = JSON.parse(index);
 						for(var i in json){
 							console.log('!', i, json[i]);
-							chaincode.query.read([json[i]], cb_got_customer);					//iter over each, read their values
+							chaincode.query.readcustomer([json[i]], cb_got_customer);					//iter over each, read their values
 						}
 					}
 					catch(e){
@@ -422,7 +425,7 @@ function cb_deployed(e){
 						var json = JSON.parse(index);
 						for(var i in json){
 							console.log('!', i, json[i]);
-							chaincode.query.read([json[i]], cb_got_broker);					//iter over each, read their values
+							chaincode.query.readbroker([json[i]], cb_got_broker);					//iter over each, read their values
 						}
 					}
 					catch(e){

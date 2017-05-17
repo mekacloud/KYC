@@ -317,12 +317,13 @@ function build_customer(data){
 	//data.user = escapeHtml(data.user);
 	
 	console.log('got a customer: ', data.color);
-	if(!$('#' + data.name).length){								//only populate if it doesn't exists
+	console.log('build - ',data.cardid, $('#cus_' + data.cardid).length)
+	if(!$('#cus_' + data.cardid).length){								//only populate if it doesn't exists
 		//if(data.size == 16) size = 'fa-3x';
 		if(data.color) colorClass = data.color.toLowerCase();
 		
 		//html += '<span id="' + data.name + '" class="fa fa-circle ' + size + ' ball ' + colorClass + ' title="' + data.name + '" user="customer">'+data.name+'</span>';
-		html += '<span style="font-size: 200%" cardid="' + data.cardid + '" class="fa fa-square fa-1x ball blue title="' + data.name +'">  '+data.name+'  </span>'
+		html += '<span style="font-size: 200%" cardid="' + data.cardid + '" id="cus_' + data.cardid + '" class="fa fa-square fa-1x ball blue title="' + data.name +'">  '+data.name+'  </span>'
 		//if(data.user && data.user.toLowerCase() == bag.setup.USER1){
 			$('#customerwrap').append(html);
 		//}

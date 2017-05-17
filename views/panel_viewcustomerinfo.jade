@@ -1,0 +1,18 @@
+#requestcustomerPanel(hidden).panel
+	h1 Request Customer Permission
+	hr
+	
+	#innerWrap
+			legend 
+				input(type="text" name="cusid" placeholder="customer id")
+				span.hint &nbsp;&nbsp;customer id
+			legend
+				span &nbsp;&nbsp;
+				span#customernametext(style="color:gray") name
+
+			br
+			legend
+				button(type="button")#getinfobutton
+					span.fa.fa-search &nbsp;&nbsp;
+					span QUERY
+			br

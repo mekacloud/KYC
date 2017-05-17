@@ -16,20 +16,20 @@ module.exports.process_msg = function(ws, data){
 		if(data.type == 'create'){
 			console.log('kyc - its a create!');
 			if(data.name && data.telno && data.age && data.occupation){
-				chaincode.invoke.new_customer([data.name, data.telno, data.age, data.occupation], cb_invoked);	//create a new customer
+				chaincode.invoke.newcustomer([data.name, data.telno, data.age, data.occupation], cb_invoked);	//create a new customer
 			}
 		}																					//only look at messages for part 1
 		else if(data.type == 'createcustomer'){
 			console.log('its a createcustomer!');
 			if(data.name && data.telno && data.age && data.occupation){
 				console.log('kyc - c cus invoke');
-				chaincode.invoke.new_customer([data.name, data.telno, data.age, data.occupation, data.cardid, data.creator], cb_invoked);	//create a new customer
+				chaincode.invoke.newcustomer([data.name, data.telno, data.age, data.occupation, data.cardid, data.creator], cb_invoked);	//create a new customer
 			}
 		}
         else if (data.type == 'createbroker'){
 			console.log('its a createbroker!');
 			if (data.name && data.brokeno){
-				chaincode.invoke.new_broke([data.name, data.brokeno]);
+				chaincode.invoke.newbroke([data.name, data.brokeno]);
 			}
 		}
 		else if(data.type == 'get'){
@@ -46,7 +46,7 @@ module.exports.process_msg = function(ws, data){
 		}
 		else if(data.type == 'getcustomerofbroke'){
 			console.log('get customer of broker msg');
-			chaincode.query.read([data.brokeno], cb_got_broker);
+			chaincode.query.readbroker([data.brokeno], cb_got_broker);
 		}
         /*
 		else if(data.type == 'transfer'){
@@ -81,7 +81,7 @@ module.exports.process_msg = function(ws, data){
 				//serialized version
 				async.eachLimit(keys, concurrency, function(key, cb) {
 					console.log('!', json[key]);
-					chaincode.query.read([json[key]], function(e, customer) {
+					chaincode.query.readcustomer([json[key]], function(e, customer) {
 						if(e != null) console.log('[ws error] did not get customer:', e);
 						else {
 							console.log('read !!!! ', JSON.parse(customer));
@@ -110,12 +110,12 @@ module.exports.process_msg = function(ws, data){
 					var concurrency = 1;
 
 					async.eachLimit(keys, concurrency, function(key, cb) {
-						console.log('!', broker[key]);
-						chaincode.query.read([broker[key], broker.brokeno], function(e, customer) {
+						console.log('!', broker.allowcustomer[key]);
+						chaincode.query.readcustomergid([broker.allowcustomer[key]], function(e, customer) {
 							if(e != null) console.log('[ws error] did not get customer:', e);
 							else {
 								console.log('read !!!! ', JSON.parse(customer));
-								if (customer) sendMsg({msg: 'customer', e:e, customer: JSON.parse(broker)});
+								if (customer) sendMsg({msg: 'customerofbroke', e:e, customerofbroke: JSON.parse(customer)});
 								cb(null);
 							}
 						});
@@ -158,7 +158,7 @@ module.exports.process_msg = function(ws, data){
 				//serialized version
 				async.eachLimit(keys, concurrency, function(key, cb) {
 					console.log('!', json[key]);
-					chaincode.query.read([json[key]], function(e, broker) {
+					chaincode.query.readbroker([json[key]], function(e, broker) {
 						if(e != null) console.log('[ws error] did not get customer:', e);
 						else {
 							console.log('read !!!! ', JSON.parse(broker));
