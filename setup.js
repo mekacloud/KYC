@@ -29,6 +29,7 @@ if(process.env.PORT && process.env.PRODUCTION){
 	exports.SERVER = 	{	
 							HOST: '0.0.0.0',
 							PORT: process.env.PORT,
+							SOCKERPORT: 6970,
 							DESCRIPTION: 'Bluemix - Production',
 							EXTURI: ext_uri,		//no longer used 4/29/2016
 						};
@@ -41,6 +42,7 @@ else if(process.env.PORT){
 		exports.SERVER = 	{	
 								HOST: '0.0.0.0',
 								PORT: process.env.PORT,
+								SOCKERPORT: 6970,
 								DESCRIPTION: 'Bluemix - Development',
 								EXTURI: ext_uri,		//no longer used 4/29/2016
 							 };
@@ -53,6 +55,7 @@ else{
 	exports.SERVER = 	{
 							HOST:'localhost',
 							PORT: 5000,
+							SOCKERPORT: 6970,
 							DESCRIPTION: 'Localhost',
 							EXTURI: 'localhost:5000',	//no longer used 4/29/2016
 						 };
