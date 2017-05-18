@@ -265,10 +265,10 @@ function build_customer(data) {
 	//data.user = escapeHtml(data.user);
 
 	console.log('got a customer: ', data.color);
-	if ($('#cus_' + data.customerid).length) {
-		if ($('#cus_' + data.customerid).parent == 'pending') {
-			$('#cus_' + data.customerid).html('')
-		}
+	if ($('#pcus_' + data.customerid).length) {
+		//if ($('#pcus_' + data.customerid).parent == 'pending') {
+			$('#pcus_' + data.customerid).remove();
+		//}
 	}
 
 	if (!$('#cus_' + data.customerid).length) {								//only populate if it doesn't exists
@@ -276,7 +276,7 @@ function build_customer(data) {
 		if (data.color) colorClass = data.color.toLowerCase();
 
 		//html += '<span id="' + data.name + '" class="fa fa-circle ' + size + ' ball ' + colorClass + ' title="' + data.name + '" user="customer">'+data.name+'</span>';
-		html += '<span style="font-size: 200%" parent="allow" id="cus_' + data.customerid + '" cardid="' + data.customerid + '" class="fa fa-square fa-1x ball blue title="' + data.customerid + '">  ' + data.name + '  </span>'
+		html += '<span style="font-size: 200%" id="cus_' + data.customerid + '" cardid="' + data.customerid + '" class="fa fa-square fa-1x ball blue title="' + data.customerid + '">  ' + data.name + '  </span>'
 		//if(data.user && data.user.toLowerCase() == bag.setup.USER1){
 		$('#customerofbrokewrap').append(html);
 		//}
@@ -300,12 +300,12 @@ function build_pendingcustomer(data) {
 	//data.user = escapeHtml(data.user);
 
 	console.log('got a pendingcustomer: ', data.color);
-	if (!$('#cus_' + data.customerid).length) {								//only populate if it doesn't exists
+	if (!$('#pcus_' + data.customerid).length) {								//only populate if it doesn't exists
 		//if(data.size == 16) size = 'fa-3x';
 		if (data.color) colorClass = data.color.toLowerCase();
 
 		//html += '<span id="' + data.name + '" class="fa fa-circle ' + size + ' ball ' + colorClass + ' title="' + data.name + '" user="customer">'+data.name+'</span>';
-		html += '<span style="font-size: 200%" parent="pending" id="cus_' + data.customerid + '" cardid="' + data.customerid + '" class="fa fa-asterisk fa-1x ball teal title="' + data.customerid + '">  ' + data.name + '  </span>'
+		html += '<span style="font-size: 200%" id="pcus_' + data.customerid + '" cardid="' + data.customerid + '" class="fa fa-asterisk fa-1x ball teal title="' + data.customerid + '">  ' + data.name + '  </span>'
 		//if(data.user && data.user.toLowerCase() == bag.setup.USER1){
 		$('#pendingcustomerwrap').append(html);
 		//}
