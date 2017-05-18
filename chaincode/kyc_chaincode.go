@@ -44,11 +44,11 @@ var customerKey = "cus_"
 // BrokerKey key of broker
 var BrokerKey = "bro_"
 
-// GauranteeIDKey key of gaurantee id
-var GauranteeIDKey = "gau_"
+// GuaranteeIDKey key of guarantee id
+var GuaranteeIDKey = "gua_"
 
-// CusGauIDKey key of something
-var CusGauIDKey = "cgi_"
+// CusGuaIDKey key of something
+var CusGuaIDKey = "cgi_"
 
 //Customer is Customer
 type Customer struct {
@@ -61,18 +61,18 @@ type Customer struct {
 	Creator    string `json:"creator"`
 }
 
-//GauranteeID generate from Customer
-type GauranteeID struct {
-	GauranteeID  string `json:"gauranteeid"`
+//GuaranteeID generate from Customer
+type GuaranteeID struct {
+	GuaranteeID  string `json:"guaranteeid"`
 	CustomerID   string `json:"customerid"`
 	AllowBroke   []int  `json:"allowbroke"`
 	PendingBroke []int  `json:"pendingbroke"`
 }
 
-// type CusGauID struct {
+// type CusGuaID struct {
 // 	CardID      string      `json:"cardid"`
 // 	Customer    Customer    `json:"customer"`
-// 	GauranteeID GauranteeID `json:"gauranteeid"`
+// 	GuaranteeID GuaranteeID `json:"guaranteeid"`
 // }
 
 // Broker Contain Name and Number and AllowCustomer
@@ -224,7 +224,7 @@ func (t *SimpleChaincode) readcustomer(stub shim.ChaincodeStubInterface, args []
 }
 
 // ============================================================================================================================
-// Read - read a variable from chaincode state by gauranteeid
+// Read - read a variable from chaincode state by guaranteeid
 // ============================================================================================================================
 func (t *SimpleChaincode) readcustomergid(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var gid, jsonResp string
@@ -235,14 +235,14 @@ func (t *SimpleChaincode) readcustomergid(stub shim.ChaincodeStubInterface, args
 	}
 
 	gid = args[0]
-	valAsbytes, err := stub.GetState(GauranteeIDKey + gid) //get the var from chaincode state
+	valAsbytes, err := stub.GetState(GuaranteeIDKey + gid) //get the var from chaincode state
 	if err != nil {
 		jsonResp = "{\"Error\":\"Failed to get state for " + gid + "\"}"
 		return nil, errors.New(jsonResp)
 	}
 
-	gau := GauranteeID{}
-	json.Unmarshal(valAsbytes, &gau)
+	gua := GuaranteeID{}
+	json.Unmarshal(valAsbytes, &gua)
 
 	return valAsbytes, nil //send it onward
 }
@@ -273,7 +273,7 @@ func (t *SimpleChaincode) requestPermission(stub shim.ChaincodeStubInterface, ar
 	// var err error
 
 	if len(args) != 2 {
-		return nil, errors.New("Incorrect number of arguments. Expecting gaurantee id and brokeno")
+		return nil, errors.New("Incorrect number of arguments. Expecting guarantee id and brokeno")
 	}
 
 	gid := args[0]
@@ -288,18 +288,18 @@ func (t *SimpleChaincode) requestPermission(stub shim.ChaincodeStubInterface, ar
 	broker := Broker{}
 	json.Unmarshal(brokerAsBytes, &broker)
 
-	gidAsbytes, err := stub.GetState(GauranteeIDKey + gid)
+	gidAsbytes, err := stub.GetState(GuaranteeIDKey + gid)
 	if err != nil {
 		jsonResp := "{\"Error\":\"Failed to get state for " + gid + "\"}"
 		return nil, errors.New(jsonResp)
 	}
-	gau := GauranteeID{}
-	json.Unmarshal(gidAsbytes, &gau)
+	gua := GuaranteeID{}
+	json.Unmarshal(gidAsbytes, &gua)
 
 	already := false
 	fmt.Printf("GID %s\n", gidAsbytes)
 	fmt.Printf("brokeno %d\n", brokeNo)
-	for _, s := range gau.AllowBroke {
+	for _, s := range gua.AllowBroke {
 		//set[s] = struct{}{}
 		if s == brokeNo {
 			already = true
@@ -313,15 +313,15 @@ func (t *SimpleChaincode) requestPermission(stub shim.ChaincodeStubInterface, ar
 		return nil, errors.New(jsonResp)
 	}
 
-	gau.PendingBroke = append(gau.PendingBroke, brokeNo)
-	broker.PendingCustomer = append(broker.PendingCustomer, gau.GauranteeID)
+	gua.PendingBroke = append(gua.PendingBroke, brokeNo)
+	broker.PendingCustomer = append(broker.PendingCustomer, gua.GuaranteeID)
 
-	fmt.Println("gau.AllowBroke")
-	fmt.Println(gau.AllowBroke)
+	fmt.Println("gua.AllowBroke")
+	fmt.Println(gua.AllowBroke)
 
-	jsonAsBytes, err := json.Marshal(gau)
+	jsonAsBytes, err := json.Marshal(gua)
 	fmt.Printf("GID %s\n", jsonAsBytes)
-	err = stub.PutState(GauranteeIDKey+gid, jsonAsBytes) //write the variable into the chaincode state
+	err = stub.PutState(GuaranteeIDKey+gid, jsonAsBytes) //write the variable into the chaincode state
 	if err != nil {
 		return nil, err
 	}
@@ -351,12 +351,12 @@ func (t *SimpleChaincode) customerallow(stub shim.ChaincodeStubInterface, args [
 	brokeNoAsString := args[1]
 	brokeNo, err := strconv.Atoi(brokeNoAsString)
 
-	gidAsBytes, err := stub.GetState(GauranteeIDKey + gid)
+	gidAsBytes, err := stub.GetState(GuaranteeIDKey + gid)
 	if err != nil {
 		return nil, errors.New("Failed to get thing")
 	}
-	gau := GauranteeID{}
-	json.Unmarshal(gidAsBytes, &gau)
+	gua := GuaranteeID{}
+	json.Unmarshal(gidAsBytes, &gua)
 
 	brokeAsBytes, err := stub.GetState(BrokerKey + brokeNoAsString)
 	if err != nil {
@@ -365,9 +365,9 @@ func (t *SimpleChaincode) customerallow(stub shim.ChaincodeStubInterface, args [
 	broke := Broker{}
 	json.Unmarshal(brokeAsBytes, &broke)
 
-	for i := len(gau.PendingBroke) - 1; i >= 0; i-- {
-		if gau.PendingBroke[i] == brokeNo {
-			gau.PendingBroke = append(gau.PendingBroke[:i], gau.PendingBroke[i+1:]...)
+	for i := len(gua.PendingBroke) - 1; i >= 0; i-- {
+		if gua.PendingBroke[i] == brokeNo {
+			gua.PendingBroke = append(gua.PendingBroke[:i], gua.PendingBroke[i+1:]...)
 			break
 		}
 	}
@@ -378,13 +378,13 @@ func (t *SimpleChaincode) customerallow(stub shim.ChaincodeStubInterface, args [
 		}
 	}
 	already := false
-	for _, s := range gau.AllowBroke {
+	for _, s := range gua.AllowBroke {
 		if s == brokeNo {
 			already = true
 		}
 	}
 	if !already {
-		gau.AllowBroke = append(gau.AllowBroke, brokeNo)
+		gua.AllowBroke = append(gua.AllowBroke, brokeNo)
 		broke.AllowCustomer = append(broke.AllowCustomer, gid)
 	}
 
@@ -396,8 +396,8 @@ func (t *SimpleChaincode) customerallow(stub shim.ChaincodeStubInterface, args [
 		return nil, err
 	}
 
-	jsonGauAsBytes, _ := json.Marshal(gau)
-	err = stub.PutState(GauranteeIDKey+gid, jsonGauAsBytes) //rewrite the customer with id as key
+	jsonGuaAsBytes, _ := json.Marshal(gua)
+	err = stub.PutState(GuaranteeIDKey+gid, jsonGuaAsBytes) //rewrite the customer with id as key
 	if err != nil {
 		return nil, err
 	}
@@ -512,23 +512,23 @@ func (t *SimpleChaincode) newcustomer(stub shim.ChaincodeStubInterface, args []s
 
 	sha256AsByte := sha256.Sum256(str)
 
-	gauranteeID := GauranteeID{}
+	guaranteeID := GuaranteeID{}
 	var emptyIntArray []int
-	gauranteeID.GauranteeID = strings.ToUpper(hex.EncodeToString(sha256AsByte[:]))
-	gauranteeID.CustomerID = res.CardID
-	gauranteeID.AllowBroke = emptyIntArray
-	gauranteeID.PendingBroke = emptyIntArray
+	guaranteeID.GuaranteeID = strings.ToUpper(hex.EncodeToString(sha256AsByte[:]))
+	guaranteeID.CustomerID = res.CardID
+	guaranteeID.AllowBroke = emptyIntArray
+	guaranteeID.PendingBroke = emptyIntArray
 
-	str, err = json.Marshal(gauranteeID)
-	err = stub.PutState(GauranteeIDKey+gauranteeID.GauranteeID, str)
+	str, err = json.Marshal(guaranteeID)
+	err = stub.PutState(GuaranteeIDKey+guaranteeID.GuaranteeID, str)
 	if err != nil {
 		return nil, err
 	}
 
-	//gid := GauranteeID{}
+	//gid := GuaranteeID{}
 	// h := sha1.New()
 	// h.Write([]byte(res))
-	// gid.GauranteeID = h.Sum()
+	// gid.GuaranteeID = h.Sum()
 
 	//get the customer index-
 	customersAsBytes, err := stub.GetState(customerIndexStr)
