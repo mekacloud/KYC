@@ -162,49 +162,6 @@ var sockerserver = net.createServer(function (sock) {
 		// Write the data back to the socket, the client will receive it as data from the server
 		//sock.write('You said "' + data + '"');
 		if (json.type) {
-
-			switch (json.type) {
-				case 'newcustomer':
-					chaincode.invoke.newcustomer([args.name, args.telno, args.age, args.occupation, args.cardid, args.creator], cb_invoked);	//create a new customer)
-					break;
-				case 'newbroker':
-					chaincode.invoke.newbroke([args.name, args.brokeno], cb_invoked);
-					break;
-				case 'requestpermission':
-					chaincode.invoke.requestPermission([args.guaranteeid, args.brokeno], cb_invoked);
-					break;
-				case 'customerallow':
-					chaincode.invoke.customerallow([args.guaranteeid, args.brokeno], cb_invoked);
-					break;
-
-				case 'querycustomer':
-					switch (json.usertype){
-						case 'customer':
-							chaincode.query.readCustomerByCus([args.cardid], cb_query);
-							break;
-						case 'broker':
-							chaincode.query.readCustomerByBrk([args.cardid], cb_query);
-							break;
-						case 'kycagent':
-							chaincode.query.readCustomerByKycAgent([args.cardid], cb_query);
-							break;
-					}
-					break;
-				case 'querybroker':
-					switch (json.usertype){
-						case 'customer':
-							chaincode.query.readBrokerByCus([args.brokeno, args.cardid], cb_query);
-							break;
-						case 'broker':
-							chaincode.query.readBrokerByBrk([args.brokeno, args.brokenoReader], cb_query);
-							break;
-						case 'kycagent':
-							chaincode.query.readBrokerByKycAgent([args.brokeno], cb_query);
-							break;
-					}
-					break;
-			}
-			/*
 			if (json.type == 'newcustomer')
 				chaincode.invoke.newcustomer([args.name, args.telno, args.age, args.occupation, args.cardid, args.creator], cb_invoked);	//create a new customer)
 
@@ -213,8 +170,6 @@ var sockerserver = net.createServer(function (sock) {
 
 			else if (json.type == 'newbroker')
 				chaincode.invoke.newbroke([args.name, args.brokeno], cb_invoked);
-*/
-
 		}
 		else {
 			sock.write('goodbye');
