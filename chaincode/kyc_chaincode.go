@@ -176,6 +176,9 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 	if function == "readbroker" { //read a variable
 		return t.readbroker(stub, args)
 	}
+	if function == "getgidofcustomer" {
+		return t.getgidofcustomer(stub, args)
+	}
 	fmt.Println("query did not find func: " + function) //error
 
 	return nil, errors.New("Received unknown function query")
@@ -266,6 +269,37 @@ func (t *SimpleChaincode) readbroker(stub shim.ChaincodeStubInterface, args []st
 	}
 
 	return valAsbytes, nil //send it onward
+}
+
+func (t *SimpleChaincode) getgidofcustomer(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	if len(args) != 1 {
+		return nil, errors.New("Incorrect number of arguments. Expecting cardid only")
+	}
+
+	cardid := args[0]
+	customerAsBytes, err := stub.GetState(customerKey + cardid)
+	if err != nil {
+		jsonResp := "{\"Error\":\"Failed to get state for customer " + cardid + "\"}"
+		return nil, errors.New(jsonResp)
+	}
+	customer := Customer{}
+	json.Unmarshal(customerAsBytes, customer)
+
+	//str, err := json.Marshal(res)
+	//err = stub.PutState(customerKey+name, str)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// err = stub.PutState(customerKey+cardid, str)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	sha256AsByte := sha256.Sum256(customerAsBytes)
+	gid := strings.ToUpper(hex.EncodeToString(sha256AsByte[:]))
+	jsonResp := "{\"guaranteeid\":\"" + gid + "\"}"
+
+	return json.Marshal(jsonResp)
 }
 
 func (t *SimpleChaincode) requestPermission(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
