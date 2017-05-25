@@ -545,7 +545,8 @@ func (t *SimpleChaincode) newcustomer(stub shim.ChaincodeStubInterface, args []s
 	err = stub.PutState(customerIndexStr, jsonAsBytes) //store name of customer
 
 	fmt.Println("- end init customer")
-	return nil, nil
+	gid, err := json.Marshal(guaranteeID.GuaranteeID)
+	return gid, nil
 }
 
 // ============================================================================================================================
