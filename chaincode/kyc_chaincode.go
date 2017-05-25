@@ -205,6 +205,27 @@ func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string) 
 // ============================================================================================================================
 // Read - read a variable from chaincode state by cardid
 // ============================================================================================================================
+func (t *SimpleChaincode) readCustomerByCus(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var cardid, jsonResp string
+	var err error
+
+	if len(args) != 1 {
+		return nil, errors.New("Incorrect number of arguments. Expecting name of the var to query")
+	}
+
+	cardid = args[0]
+	valAsbytes, err := stub.GetState(customerKey + cardid) //get the var from chaincode state
+	if err != nil {
+		jsonResp = "{\"Error\":\"Failed to get state for " + cardid + "\"}"
+		return nil, errors.New(jsonResp)
+	}
+
+	return valAsbytes, nil //send it onward
+}
+
+// ============================================================================================================================
+// Read - read a variable from chaincode state by cardid
+// ============================================================================================================================
 func (t *SimpleChaincode) readcustomer(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var cardid, jsonResp string
 	var err error

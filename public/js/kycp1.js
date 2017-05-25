@@ -87,15 +87,15 @@ $(document).on('ready', function() {
 	
 	//drag and drop marble
 	$('#customerwrap, #editpane').sortable({connectWith: '.sortable'}).disableSelection();
-	$('#customerwrap').droppable({drop:
-		function( event, ui ) {
-			var user = $(ui.draggable).attr('user');
-			if(user.toLowerCase() != bag.setup.CUSTOMER){
-				$(ui.draggable).addClass('invalid');
-				transfer($(ui.draggable).attr('id'), bag.setup.CUSTOMER);
-			}
-		}
-	});
+	// $('#customerwrap').droppable({drop:
+	// 	function( event, ui ) {
+	// 		var user = $(ui.draggable).attr('user');
+	// 		if(user.toLowerCase() != bag.setup.CUSTOMER){
+	// 			$(ui.draggable).addClass('invalid');
+	// 			transfer($(ui.draggable).attr('id'), bag.setup.CUSTOMER);
+	// 		}
+	// 	}
+	// });
 	// $('#brokerwrap').droppable({drop:
 	// 	function( event, ui ) {
 	// 		var user = $(ui.draggable).attr('user');
@@ -105,26 +105,26 @@ $(document).on('ready', function() {
 	// 		}
 	// 	}
 	// });
-	$('#editpane').droppable({drop:
-		function( event, ui ) {
-			var cardid = $(ui.draggable).attr('cardid');
-			console.log('edit customer ', cardid);
-			if(cardid){
-				console.log('editing customer', cardid);
-				// var obj = 	{
-				// 				type: 'remove',
-				// 				name: cardid,
-				// 				v: 1
-				// 			};
-				// ws.send(JSON.stringify(obj));
-				// $(ui.draggable).fadeOut();
-				// setTimeout(function(){
-				// 	$(ui.draggable).remove();
-				// }, 300);
-				openEditCustomer(cardid);
-			}
-		}
-	});
+	// $('#editpane').droppable({drop:
+	// 	function( event, ui ) {
+	// 		var cardid = $(ui.draggable).attr('cardid');
+	// 		console.log('edit customer ', cardid);
+	// 		if(cardid){
+	// 			console.log('editing customer', cardid);
+	// 			// var obj = 	{
+	// 			// 				type: 'remove',
+	// 			// 				name: cardid,
+	// 			// 				v: 1
+	// 			// 			};
+	// 			// ws.send(JSON.stringify(obj));
+	// 			// $(ui.draggable).fadeOut();
+	// 			// setTimeout(function(){
+	// 			// 	$(ui.draggable).remove();
+	// 			// }, 300);
+	// 			openEditCustomer(cardid);
+	// 		}
+	// 	}
+	// });
 	
 	
 	function openEditCustomer(cardid){
@@ -240,7 +240,7 @@ function connect_to_server(){
 			}
 			else if(msgObj.customer){
 				console.log('rec - cus', msgObj.msg, msgObj);
-				build_customer(msgObj.customer);
+				build_customer2(msgObj.customer);
 			}
 			else if (msgObj.broker){
 				console.log('rec- broke', msgObj.msg, msgObj);
@@ -307,6 +307,36 @@ function build_ball(data){
 }
 
 function build_customer(data){
+	var html = '';
+	var colorClass = '';
+	var size = 'fa-5x';
+	
+	console.log('data', data);
+	data.name = escapeHtml(data.name);
+	data.color = escapeHtml('blue');
+	//data.user = escapeHtml(data.user);
+	
+	console.log('got a customer: ', data.color);
+	console.log('build - ',data.cardid, $('#cus_' + data.cardid).length)
+	if(!$('#cus_' + data.cardid).length){								//only populate if it doesn't exists
+		//if(data.size == 16) size = 'fa-3x';
+		if(data.color) colorClass = data.color.toLowerCase();
+		
+		//html += '<span id="' + data.name + '" class="fa fa-circle ' + size + ' ball ' + colorClass + ' title="' + data.name + '" user="customer">'+data.name+'</span>';
+		html += '<span style="font-size: 200%" cardid="' + data.cardid + '" id="cus_' + data.cardid + '" class="fa fa-square fa-1x ball blue title="' + data.name +'">  '+data.name+'  </span>'
+		//if(data.user && data.user.toLowerCase() == bag.setup.USER1){
+			$('#customerwrap').append(html);
+		//}
+		// else{
+		// 	$('#user2wrap').append(html);
+		// }
+	}
+	console.log('html after build - ', html);
+	return html;
+}
+
+
+function build_customer2(data){
 	var html = '';
 	var colorClass = '';
 	var size = 'fa-5x';

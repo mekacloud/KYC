@@ -156,62 +156,61 @@ var sockerserver = net.createServer(function (sock) {
 	sock.on('data', function (data) {
 
 		console.log('DATA ' + sock.remoteAddress + ': ' + data);
-		var json = JSON.parse(data);
+		var dataObject = JSON.parse(data);
 		console.log("args = ", json);
-		var args = json;
 		// Write the data back to the socket, the client will receive it as data from the server
 		//sock.write('You said "' + data + '"');
-		if (json.type) {
+		if (dataObject.type) {
 
-			switch (json.type) {
+			switch (dataObject.type) {
 				case 'newcustomer':
-					chaincode.invoke.newcustomer([args.name, args.telno, args.age, args.occupation, args.cardid, args.creator], cb_invoked);	//create a new customer)
+					chaincode.invoke.newcustomer([dataObject.name, dataObject.telno, dataObject.age, dataObject.occupation, dataObject.cardid, dataObject.creator], cb_invoked);	//create a new customer)
 					break;
 				case 'newbroker':
-					chaincode.invoke.newbroke([args.name, args.brokeno], cb_invoked);
+					chaincode.invoke.newbroke([dataObject.name, dataObject.brokeno], cb_invoked);
 					break;
 				case 'requestpermission':
-					chaincode.invoke.requestPermission([args.guaranteeid, args.brokeno], cb_invoked);
+					chaincode.invoke.requestPermission([dataObject.guaranteeid, dataObject.brokeno], cb_invoked);
 					break;
 				case 'customerallow':
-					chaincode.invoke.customerallow([args.guaranteeid, args.brokeno], cb_invoked);
+					chaincode.invoke.customerallow([dataObject.guaranteeid, dataObject.brokeno], cb_invoked);
 					break;
 
 				case 'querycustomer':
-					switch (json.usertype){
+					switch (dataObject.usertype){
 						case 'customer':
-							chaincode.query.readCustomerByCus([args.cardid], cb_query);
+							chaincode.query.readCustomerByCus([dataObject.cardid], cb_query);
 							break;
 						case 'broker':
-							chaincode.query.readCustomerByBrk([args.cardid], cb_query);
+							chaincode.query.readCustomerByBrk([dataObject.cardid], cb_query);
 							break;
 						case 'kycagent':
-							chaincode.query.readCustomerByKycAgent([args.cardid], cb_query);
+							chaincode.query.readCustomerByKycAgent([dataObject.cardid], cb_query);
 							break;
 					}
 					break;
 				case 'querybroker':
-					switch (json.usertype){
+					switch (dataObject.usertype){
 						case 'customer':
-							chaincode.query.readBrokerByCus([args.brokeno, args.cardid], cb_query);
+							chaincode.query.readBrokerByCus([dataObject.brokeno, dataObject.cardid], cb_query);
 							break;
 						case 'broker':
-							chaincode.query.readBrokerByBrk([args.brokeno, args.brokenoReader], cb_query);
+							chaincode.query.readBrokerByBrk([dataObject.brokeno, dataObject.brokenoReader], cb_query);
 							break;
 						case 'kycagent':
-							chaincode.query.readBrokerByKycAgent([args.brokeno], cb_query);
+							chaincode.query.readBrokerByKycAgent([dataObject.brokeno], cb_query);
 							break;
 					}
 					break;
 			}
 			/*
-			if (json.type == 'newcustomer')
+			if (args.type == 'newcustomer')
 				chaincode.invoke.newcustomer([args.name, args.telno, args.age, args.occupation, args.cardid, args.creator], cb_invoked);	//create a new customer)
 
-			else if (json.type == 'querycustomer')
+			else if (args.type == 'querycustomer')
 				chaincode.query.readcustomer([args.cardid], cb_query);	//create a new customer)
 
-			else if (json.type == 'newbroker')
+			else if (args.type == 'newbroker')
 				chaincode.invoke.newbroke([args.name, args.brokeno], cb_invoked);
 */
 
