@@ -69,6 +69,11 @@ type GuaranteeID struct {
 	PendingBroke []int  `json:"pendingbroke"`
 }
 
+type GuaranteeID_ID struct {
+	GuaranteeID string `json:"guaranteeid"`
+	CustomerID  string `json:"customerid"`
+}
+
 // type CusGuaID struct {
 // 	CardID      string      `json:"cardid"`
 // 	Customer    Customer    `json:"customer"`
@@ -296,10 +301,10 @@ func (t *SimpleChaincode) getgidofcustomer(stub shim.ChaincodeStubInterface, arg
 	// }
 
 	sha256AsByte := sha256.Sum256(customerAsBytes)
-	gid := strings.ToUpper(hex.EncodeToString(sha256AsByte[:]))
-	jsonResp := "{\"guaranteeid\":\"" + gid + "\"}"
-
-	return json.Marshal(jsonResp)
+	gidid := GuaranteeID_ID{}
+	gidid.CustomerID = cardid
+	gidid.GuaranteeID = strings.ToUpper(hex.EncodeToString(sha256AsByte[:]))
+	return json.Marshal(gidid)
 }
 
 func (t *SimpleChaincode) requestPermission(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
